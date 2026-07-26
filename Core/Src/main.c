@@ -20,9 +20,10 @@
 #include "main.h"
 #include "cmsis_os.h"
 
+
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "../../App/app.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -48,25 +49,6 @@ const osThreadAttr_t defaultTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
-/* Definitions for readSensorData */
-osThreadId_t readSensorDataHandle;
-const osThreadAttr_t readSensorData_attributes = {
-  .name = "readSensorData",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityLow,
-};
-/* Definitions for showSensorData */
-osThreadId_t showSensorDataHandle;
-const osThreadAttr_t showSensorData_attributes = {
-  .name = "showSensorData",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityLow,
-};
-/* Definitions for sesnsorData */
-osMessageQueueId_t sesnsorDataHandle;
-const osMessageQueueAttr_t sesnsorData_attributes = {
-  .name = "sesnsorData"
-};
 /* USER CODE BEGIN PV */
 
 /* USER CODE END PV */
@@ -74,8 +56,6 @@ const osMessageQueueAttr_t sesnsorData_attributes = {
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 void StartDefaultTask(void *argument);
-void startReadSensorData(void *argument);
-void startShowSensorData(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -133,10 +113,6 @@ int main(void)
   /* start timers, add new ones, ... */
   /* USER CODE END RTOS_TIMERS */
 
-  /* Create the queue(s) */
-  /* creation of sesnsorData */
-  sesnsorDataHandle = osMessageQueueNew (16, sizeof(uint32_t), &sesnsorData_attributes);
-
   /* USER CODE BEGIN RTOS_QUEUES */
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
@@ -144,12 +120,6 @@ int main(void)
   /* Create the thread(s) */
   /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
-
-  /* creation of readSensorData */
-  readSensorDataHandle = osThreadNew(startReadSensorData, NULL, &readSensorData_attributes);
-
-  /* creation of showSensorData */
-  showSensorDataHandle = osThreadNew(startShowSensorData, NULL, &showSensorData_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -238,48 +208,16 @@ void SystemClock_Config(void)
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
+
+  // App init
+  appInit();
+
   /* Infinite loop */
   for(;;)
   {
     osDelay(1);
   }
   /* USER CODE END 5 */
-}
-
-/* USER CODE BEGIN Header_startReadSensorData */
-/**
-* @brief Function implementing the readSensorData thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_startReadSensorData */
-void startReadSensorData(void *argument)
-{
-  /* USER CODE BEGIN startReadSensorData */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END startReadSensorData */
-}
-
-/* USER CODE BEGIN Header_startShowSensorData */
-/**
-* @brief Function implementing the showSensorData thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_startShowSensorData */
-void startShowSensorData(void *argument)
-{
-  /* USER CODE BEGIN startShowSensorData */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END startShowSensorData */
 }
 
 /**
