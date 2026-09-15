@@ -3,7 +3,7 @@
 //
 
 #include "queues.h"
-
+#include "../Interfaces/Inc/BMP280.h"
 #include "cmsis_os2.h"
 
 
@@ -12,13 +12,13 @@
 osMessageQueueId_t sensorDataHandle;
 
 const osMessageQueueAttr_t sensorData_attributes = {
-    .name = "sesnsorData"
+    .name = "sensorData"
 };
 
 
 void createQueues(void)
 {
     /* Create the queue(s) */
-    /* creation of sesnsorData */
-    sensorDataHandle = osMessageQueueNew(16, sizeof(uint32_t), &sensorData_attributes);
+    /* creation of sensorData */
+    sensorDataHandle = osMessageQueueNew(16, sizeof(BMP280Values), &sensorData_attributes);
 }
