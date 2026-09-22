@@ -7,7 +7,7 @@
 #include "cmsis_os2.h"
 #include "queues.h"
 #include "stm32l476xx.h"
-#include "../../Interfaces/Inc/Peripherals.h"
+#include "../../Interfaces/Inc/Spi.h"
 #include "../../Interfaces/Inc/BMP280.h"
 
 /* Definitions for readSensorData */
@@ -29,13 +29,13 @@ void createTaskReadSensorData(void)
 static uint8_t tx_data[7];
 static uint8_t rx_data[7];
 
-static BMP280Values BMP280ValueData;
+
 
 
 // Task loop
 void startReadSensorData(void* argument)
 {
-
+    static BMP280Values BMP280ValueData;
 
     /* Infinite loop */
     for (;;)
@@ -56,10 +56,21 @@ void startReadSensorData(void* argument)
 
 void DMA1_Channel2_IRQHandler(void)
 {
-    // Check if transfer complete is set for DMA 2 Channel
+    // Check if transfer complete is set for DMA 2 channel
     if (DMA1->ISR & DMA_ISR_TCIF2)
     {
         DMA1->IFCR = DMA_IFCR_CTCIF2; // delete interrupt flag
+
+        if (readSensorDataHandle != NULL)
+        {
+            osThreadFlagsSet(readSensorDataHandle, 0x01);
+        }
+    }
+
+    // Check if error ist set for DMA 2 channel
+    if (DMA1->ISR & DMA_ISR_TEIF2)
+    {
+        DMA1->IFCR = DMA_IFCR_CTEIF2;
 
         if (readSensorDataHandle != NULL)
         {

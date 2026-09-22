@@ -6,7 +6,7 @@
 
 #include "cmsis_os2.h"
 #include "queues.h"
-#include "../../Interfaces/Inc/Peripherals.h"
+#include "../../Interfaces/Inc/Lcd.h"
 #include "../../Interfaces/Inc/BMP280.h"
 
 /* Definitions for showSensorData */
@@ -26,21 +26,20 @@ void createTaskShowSensorData(void)
 }
 
 // Task loop
-static BMP280Values data_queue;
+
 void startShowSensorData(void* argument)
 {
+    //InitializeLcdScreen();
 
-    InitializeLcdScreen();
 
-
+    static BMP280Values data_queue;
 
     /* Infinite loop */
     for (;;)
     {
+
         if (osMessageQueueGet(sensorDataHandle, &data_queue, 0,osWaitForever) == osOK)
         {
-
-
             SetLcdCursorPosition(0, 0);
             SendLcdString("Temp: ");
             SendLcdInteger(data_queue.valueTemp);
@@ -48,6 +47,7 @@ void startShowSensorData(void* argument)
             SendLcdString("Press: ");
             SendLcdInteger(data_queue.valuePress);
         }
+
         osDelay(1);
     }
 }

@@ -33,10 +33,9 @@ enable_language(C ASM)
 
 # Create an executable object type
 add_executable(${CMAKE_PROJECT_NAME}
-        Interfaces/Src/Peripherals.c
+        Interfaces/Src/Spi.c
         Interfaces/Src/BMP280.c
-        Interfaces/Inc/BMP280.h
-        Interfaces/Inc/BMP280.h)
+        Interfaces/Src/Lcd.c)
 
 # Add STM32CubeMX generated sources
 add_subdirectory(cmake/stm32cubemx)

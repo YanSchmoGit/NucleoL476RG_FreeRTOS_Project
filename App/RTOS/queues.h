@@ -7,6 +7,7 @@
 #include "cmsis_os2.h"
 
 extern osMessageQueueId_t sensorDataHandle;
+extern osMessageQueueId_t sensorErrorHandle;
 
 void createQueues(void);
 

@@ -4,7 +4,7 @@
 
 #include "../Inc/BMP280.h"
 
-#include "../Inc/Peripherals.h"
+#include "../Inc/Spi.h"
 
 BMP280CalibrationData BMP280CalibData;
 

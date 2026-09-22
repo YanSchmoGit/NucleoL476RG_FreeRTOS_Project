@@ -6,11 +6,12 @@
 
 #include "readSensorData_task.h"
 #include "showSensorData_task.h"
-
+#include "showErrorData_task.h"
 
 void createTasks(void)
 {
     createTaskReadSensorData();
     createTaskShowSensorData();
+    createTaskShowErrorData();
 
 }

@@ -3,6 +3,7 @@
 //
 
 #include "app.h"
+#include "../Interfaces/Inc/Spi.h"
 
 
 
@@ -15,5 +16,6 @@ void appInit(void)
 
     // Create tasks
     createTasks();
+
 
 }

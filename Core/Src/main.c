@@ -24,7 +24,8 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "../../App/app.h"
-#include "../../Interfaces/Inc/Peripherals.h"
+#include "../../Interfaces/Inc/Spi.h"
+#include "../../Interfaces/Inc/Lcd.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -101,6 +102,8 @@ int main(void)
     InitBMP280();
 
     ConfigLcdScreen();
+    InitializeLcdScreen();
+
     /* USER CODE END 2 */
 
     /* Init scheduler */
@@ -216,6 +219,8 @@ void StartDefaultTask(void* argument)
 
     // App init
     appInit();
+
+
 
     /* Infinite loop */
     for (;;)
