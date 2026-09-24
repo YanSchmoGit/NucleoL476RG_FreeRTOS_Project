@@ -47,8 +47,8 @@ void ConfigSpiInterface()
     GPIOA->OSPEEDR |= GPIO_OSPEEDR_OSPEED8_1;
 
     // Set PUPDR
-    GPIOA->PUPDR &= ~GPIO_PUPDR_PUPD8; // No pull-up / no pull-down
-    //GPIOA->PUPDR |= GPIO_PUPDR_PUPD8_1; // Set du pull-up
+    //GPIOA->PUPDR &= ~GPIO_PUPDR_PUPD8; // No pull-up / no pull-down
+    GPIOA->PUPDR |= GPIO_PUPDR_PUPD8_1; // Set du pull-up
 
     // Configure SPI
 
@@ -62,6 +62,7 @@ void ConfigSpiInterface()
 
     SPI1->CR2 |= (SPI_CR2_DS_0 | SPI_CR2_DS_1 | SPI_CR2_DS_2); // Set data size to 8 bit
     SPI1->CR2 |= SPI_CR2_FRXTH; // Set FIFO reception threshold to 8 bits
+    SPI1->CR2 |= SPI_CR2_ERRIE; // Enable errors
 
     // Configure DMA channels - DMA1 CH2 DMA Rx / DMA1 CH3 DMA Tx
 
@@ -92,6 +93,9 @@ void ConfigSpiInterface()
 
     NVIC_SetPriority(DMA1_Channel2_IRQn, 5);
     NVIC_EnableIRQ(DMA1_Channel2_IRQn);
+
+    NVIC_SetPriority(SPI1_IRQn, 5);
+    NVIC_EnableIRQ(SPI1_IRQn);
 };
 
 // Macros for CS
@@ -137,17 +141,18 @@ void TransferSpiDataDMA(uint8_t* rx_data, uint8_t* tx_data, uint8_t reg)
     // Prepare DMA rx channel 2
     DMA1_Channel2->CCR &= ~DMA_CCR_EN; // Disable channel 2
     DMA1_Channel2->CMAR = (uint32_t)rx_data; // Set memory address
-    DMA1_Channel2->CNDTR = 7; // Set number of bytes o transfer
+    DMA1_Channel2->CNDTR = 7; // Set number of bytes to transfer
     DMA1_Channel2->CCR |= DMA_CCR_EN; // Enable channel 2
 
     // Prepare DMA rx channel 3
     DMA1_Channel3->CCR &= ~DMA_CCR_EN; // Disable channel 3
     DMA1_Channel3->CMAR = (uint32_t)tx_data; // Set memory address
-    DMA1_Channel3->CNDTR = 7; // Set number of bytes o transfer
+    DMA1_Channel3->CNDTR = 7; // Set number of bytes to transfer
 
     DEVICE_CS_ON(); // Enable sensor
 
     DMA1_Channel3->CCR |= DMA_CCR_EN; // Enable channel 3 -> start transmission
+
 
     uint32_t flags = osThreadFlagsWait(0x01, osFlagsWaitAny, osWaitForever);
 

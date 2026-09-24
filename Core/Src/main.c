@@ -95,15 +95,9 @@ int main(void)
 
     /* USER CODE END SysInit */
 
-    /* Initialize all configured peripherals */
+
     /* USER CODE BEGIN 2 */
-    // Configure SPI interface
-    ConfigSpiInterface();
-    InitBMP280();
-
-    ConfigLcdScreen();
-    InitializeLcdScreen();
-
+    HAL_Delay(10);
     /* USER CODE END 2 */
 
     /* Init scheduler */
@@ -216,6 +210,16 @@ void SystemClock_Config(void)
 void StartDefaultTask(void* argument)
 {
     /* USER CODE BEGIN 5 */
+
+    // Configure SPI interface
+    ConfigSpiInterface();
+
+    // Configure BMP280 Sensor
+    InitBMP280();
+
+    // Configure LCD screen
+    ConfigLcdScreen();
+    InitializeLcdScreen();
 
     // App init
     appInit();

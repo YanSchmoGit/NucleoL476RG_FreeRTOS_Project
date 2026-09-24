@@ -4,8 +4,11 @@
 
 #include "showSensorData_task.h"
 
+#include "cmsis_os.h"
 #include "cmsis_os2.h"
 #include "queues.h"
+#include "mutex.h"
+#include "showErrorData_task.h"
 #include "../../Interfaces/Inc/Lcd.h"
 #include "../../Interfaces/Inc/BMP280.h"
 
@@ -38,16 +41,28 @@ void startShowSensorData(void* argument)
     for (;;)
     {
 
-        if (osMessageQueueGet(sensorDataHandle, &data_queue, 0,osWaitForever) == osOK)
+        if (osMessageQueueGet(sensorDataHandle, &data_queue, 0,500) == osOK)
         {
-            SetLcdCursorPosition(0, 0);
-            SendLcdString("Temp: ");
-            SendLcdInteger(data_queue.valueTemp);
-            SetLcdCursorPosition(0, 1);
-            SendLcdString("Press: ");
-            SendLcdInteger(data_queue.valuePress);
-        }
+            //Acquire lcd mutex
+            osStatus_t lcdMutexStatus = osMutexAcquire(lcdMutexHandle, osWaitForever);
 
-        osDelay(1);
+            if (lcdMutexStatus == osOK)
+            {
+               SetLcdCursorPosition(0, 0);
+                SendLcdString("Temp: ");
+                SendLcdInteger(data_queue.valueTemp);
+                SetLcdCursorPosition(0, 1);
+                SendLcdString("Press: ");
+                SendLcdInteger(data_queue.valuePress);
+
+                osMutexRelease(lcdMutexHandle);
+            }
+        }
+        else
+        {
+            osThreadFlagsSet(showErrorDataHandle, 0x01);
+
+        }
+        osDelay(100);
     }
 }

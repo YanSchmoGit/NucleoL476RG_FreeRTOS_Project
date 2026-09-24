@@ -7,6 +7,7 @@ target_sources(${CMAKE_PROJECT_NAME}
         Tasks/showErrorData_task.c
         Tasks/tasks.c
         RTOS/queues.c
+        RTOS/mutex.c
 )
 
 target_include_directories(${CMAKE_PROJECT_NAME}

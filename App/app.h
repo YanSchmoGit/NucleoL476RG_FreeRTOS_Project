@@ -6,6 +6,10 @@
 #define NUCLEO_RTOS_PROJECT_APP_H
 #include "queues.h"
 #include "tasks.h"
+#include "mutex.h"
+
+
+
 // App init function
 
 void appInit(void);

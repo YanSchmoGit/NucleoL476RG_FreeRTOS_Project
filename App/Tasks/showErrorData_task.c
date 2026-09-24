@@ -5,6 +5,8 @@
 #include "showErrorData_task.h"
 #include "cmsis_os2.h"
 #include "queues.h"
+#include "mutex.h"
+#include "../../Interfaces/Inc/Lcd.h"
 
 /* Definitions for showErrorData */
 osThreadId_t showErrorDataHandle;
@@ -26,13 +28,27 @@ void createTaskShowErrorData(void)
 
 void startShowErrorData(void* argument)
 {
-
+    uint32_t flags;
 
 
     /* Infinite loop */
     for (;;)
     {
+        flags = osThreadFlagsWait(0x01, osFlagsWaitAny, osWaitForever);
 
-        osDelay(1);
+        //Acquire lcd mutex
+        osStatus_t lcdMutexStatus = osMutexAcquire(lcdMutexHandle, osWaitForever);
+
+        if (lcdMutexStatus == osOK)
+        {
+            SetLcdCursorPosition(0, 0);
+            SendLcdString("Test - Error");
+
+            osMutexRelease(lcdMutexHandle);
+        }
+
+
+
+        osDelay(100);
     }
 }

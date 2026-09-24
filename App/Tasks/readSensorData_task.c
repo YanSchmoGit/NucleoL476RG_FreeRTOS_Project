@@ -7,6 +7,7 @@
 #include "cmsis_os2.h"
 #include "queues.h"
 #include "stm32l476xx.h"
+#include "showErrorData_task.h"
 #include "../../Interfaces/Inc/Spi.h"
 #include "../../Interfaces/Inc/BMP280.h"
 
@@ -41,14 +42,11 @@ void startReadSensorData(void* argument)
     for (;;)
     {
 
-
-
         TransferSpiDataDMA(rx_data, tx_data, 0xF7);
 
         ProcessSensorData(&BMP280ValueData, rx_data);
 
         osMessageQueuePut(sensorDataHandle, &BMP280ValueData, 0, osWaitForever);
-
 
         osDelay(100);
     }
@@ -74,7 +72,26 @@ void DMA1_Channel2_IRQHandler(void)
 
         if (readSensorDataHandle != NULL)
         {
-            osThreadFlagsSet(readSensorDataHandle, 0x01);
+            osThreadFlagsSet(showErrorDataHandle, 0x01);
         }
+    }
+}
+
+
+void SPI1_IRQHandler(void)
+{
+    if (SPI1->SR & SPI_SR_CRCERR) // CRC error flag
+    {
+        osThreadFlagsSet(showErrorDataHandle, 0x01);
+    }
+
+    if (SPI1->SR & SPI_SR_OVR) // Overrun flag
+    {
+        osThreadFlagsSet(showErrorDataHandle, 0x01);
+    }
+
+    if (SPI1->SR & SPI_SR_MODF) // Mode fault
+    {
+        osThreadFlagsSet(showErrorDataHandle, 0x01);
     }
 }

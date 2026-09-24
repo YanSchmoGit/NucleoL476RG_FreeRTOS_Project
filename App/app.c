@@ -3,19 +3,18 @@
 //
 
 #include "app.h"
-#include "../Interfaces/Inc/Spi.h"
-
 
 
 
 void appInit(void)
 {
 
-    // Create Queues
+    // Create queues
     createQueues();
+
+    // Create mutexes
+    createMutexes();
 
     // Create tasks
     createTasks();
-
-
 }

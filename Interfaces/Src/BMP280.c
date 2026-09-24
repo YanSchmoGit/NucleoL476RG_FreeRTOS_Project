@@ -14,6 +14,9 @@ void InitBMP280()
 {
 
     // Send init data to BMP280
+
+    //WriteSpiData(BMP280_REGISTER_RESET, 0xB6);
+
     WriteSpiData(BMP280_REGISTER_CTRL_MEAS, BMP280_INIT_DATA);
 
     // Get calibration data
