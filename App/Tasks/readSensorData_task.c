@@ -29,7 +29,6 @@ void createTaskReadSensorData(void)
 }
 
 
-
 // Task loop
 void startReadSensorData(void* argument)
 {
@@ -40,12 +39,11 @@ void startReadSensorData(void* argument)
     /* Infinite loop */
     for (;;)
     {
-
         TransferSpiDataDMA(rx_data, tx_data, BMP280_REGISTER_PRESS_MSB);
         ProcessSensorData(&BMP280ValueData, rx_data);
 
         // check sensor data
-        if (CheckSensorData(&BMP280ValueData, 4000, 110000, 0,0) == 1 )
+        if (CheckSensorData(&BMP280ValueData, 4000, 110000, 0, 0) == 1)
         {
             // Bad values
             osThreadFlagsSet(showErrorDataHandle, ERROR_HANDLE_VALUES_OUT_OF_BOUNDS);
@@ -77,13 +75,9 @@ void DMA1_Channel2_IRQHandler(void)
     // Check if error ist set for DMA 2 channel
     if (DMA1->ISR & DMA_ISR_TEIF2)
     {
-        // DMA1->IFCR = DMA_IFCR_CTEIF2;
+        DMA1->IFCR = DMA_IFCR_CTEIF2;
 
-        if (showErrorDataHandle != NULL)
-        {
-            //osThreadFlagsSet(showErrorDataHandle, 0x01);
-            osThreadFlagsSet(readSensorDataHandle, 0x01);
-        }
+        osThreadFlagsSet(showErrorDataHandle, ERROR_HANDLE_DMA1_TRANSFER_ERROR);
     }
 }
 
@@ -93,8 +87,7 @@ void SPI1_IRQHandler(void)
     if (SPI1->SR & SPI_SR_CRCERR) // CRC error flag
     {
         SPI1->SR &= ~SPI_SR_CRCERR;
-        //osThreadFlagsSet(showErrorDataHandle, 0x01);
-        osThreadFlagsSet(readSensorDataHandle, 0x01);
+        osThreadFlagsSet(showErrorDataHandle, ERROR_HANDLE_SPI1_CRC_ERROR);
     }
 
     if (SPI1->SR & SPI_SR_OVR) // Overrun flag
@@ -103,8 +96,7 @@ void SPI1_IRQHandler(void)
         tmp = SPI1->DR;
         tmp = SPI1->SR;
         (void)tmp;
-        //osThreadFlagsSet(showErrorDataHandle, 0x01);
-        osThreadFlagsSet(readSensorDataHandle, 0x01);
+        osThreadFlagsSet(showErrorDataHandle, ERROR_HANDLE_SPI1_OVERRUN_ERROR);
     }
 
     if (SPI1->SR & SPI_SR_MODF) // Mode fault
@@ -112,7 +104,6 @@ void SPI1_IRQHandler(void)
         volatile uint32_t tmp = SPI1->SR;
         (void)tmp;
         SPI1->CR1 |= SPI_CR1_SPE;
-        // osThreadFlagsSet(showErrorDataHandle, 0x01);
-        osThreadFlagsSet(readSensorDataHandle, 0x01);
+        osThreadFlagsSet(showErrorDataHandle, ERROR_HANDLE_SPI1_MODE_FAULT_ERROR);
     }
 }

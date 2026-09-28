@@ -56,6 +56,26 @@ void startShowErrorData(void* argument)
                 SetLcdCursorPosition(0, 1);
                 SendLcdString("Value bounds     ");
             }
+            else if (flags == ERROR_HANDLE_DMA1_TRANSFER_ERROR)
+            {
+                SetLcdCursorPosition(0, 1);
+                SendLcdString("DMA1 transfer error    ");
+            }
+            else if (flags == ERROR_HANDLE_SPI1_CRC_ERROR)
+            {
+                SetLcdCursorPosition(0, 1);
+                SendLcdString("SPI1 CRC error    ");
+            }
+            else if (flags == ERROR_HANDLE_SPI1_OVERRUN_ERROR)
+            {
+                SetLcdCursorPosition(0, 1);
+                SendLcdString("Overrun error    ");
+            }
+            else if (flags == ERROR_HANDLE_SPI1_MODE_FAULT_ERROR)
+            {
+                SetLcdCursorPosition(0, 1);
+                SendLcdString("Mode fault error    ");
+            }
 
 
             osMutexRelease(lcdMutexHandle);
