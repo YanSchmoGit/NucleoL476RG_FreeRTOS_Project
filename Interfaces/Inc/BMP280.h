@@ -52,6 +52,11 @@
 #define BMP280_REGISTER_TEMP_LSB			(0xFB)   // TEMP_LSB
 #define BMP280_REGISTER_TEMP_XLSB			(0xFC)   // TEMP_XLSB
 
+// Init data
+
+#define BMP280_INIT_DATA					(0x27)
+
+#define BMP280_ID							(0x58)
 
 // Calibation data
 
@@ -85,9 +90,6 @@ typedef struct
 } BMP280Values;
 
 
-// Init data
-
-#define BMP280_INIT_DATA					(0x27)
 
 // ##### BMP280 Functions #####
 
@@ -106,6 +108,8 @@ BMP280_U32_t bmp280_compensate_P_int64(BMP280_S32_t adc_P);
 
 //  Process sensor data
 void ProcessSensorData(BMP280Values *values, uint8_t *raw_data);
+
+uint8_t CheckSensorData(BMP280Values *values, uint32_t upperLimitTemp, uint32_t upperLimitPress, uint32_t lowerLimitTemp, uint32_t lowerLimitPress);
 
 
 #endif //NUCLEO_RTOS_PROJECT_BMP280_H

@@ -26,6 +26,8 @@
 #include "../../App/app.h"
 #include "../../Interfaces/Inc/Spi.h"
 #include "../../Interfaces/Inc/Lcd.h"
+#include "../../Interfaces/Inc/BMP280.h"
+#include "../../Interfaces/Inc/Utilities.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -68,7 +70,6 @@ void StartDefaultTask(void* argument);
 
 /* USER CODE END 0 */
 
-void InitBMP280(void);
 /**
   * @brief  The application entry point.
   * @retval int
@@ -97,7 +98,20 @@ int main(void)
 
 
     /* USER CODE BEGIN 2 */
-    HAL_Delay(10);
+    // Enable utilies
+    EnableLcdTimer();
+
+    WaitTime_ms(10);
+
+    // Configure SPI interface
+    ConfigSpiInterface();
+
+    // Configure BMP280 Sensor
+    InitBMP280();
+    // Configure LCD screen
+    ConfigLcdScreen();
+    InitializeLcdScreen();
+
     /* USER CODE END 2 */
 
     /* Init scheduler */
@@ -211,15 +225,7 @@ void StartDefaultTask(void* argument)
 {
     /* USER CODE BEGIN 5 */
 
-    // Configure SPI interface
-    ConfigSpiInterface();
 
-    // Configure BMP280 Sensor
-    InitBMP280();
-
-    // Configure LCD screen
-    ConfigLcdScreen();
-    InitializeLcdScreen();
 
     // App init
     appInit();

@@ -37,6 +37,9 @@ void ConfigSpiInterface()
 
     // Set PA8 to output for chip select
 
+    // Set PA8 high --> This is necessary, because low output enables CS on chip.
+    GPIOA->BSRR |= GPIO_BSRR_BS8;
+
     // Set MODER
     GPIOA->MODER &= ~(GPIO_MODER_MODE8_Msk);
     GPIOA->MODER |= GPIO_MODER_MODE8_0; // Set to output mode
@@ -47,8 +50,8 @@ void ConfigSpiInterface()
     GPIOA->OSPEEDR |= GPIO_OSPEEDR_OSPEED8_1;
 
     // Set PUPDR
-    //GPIOA->PUPDR &= ~GPIO_PUPDR_PUPD8; // No pull-up / no pull-down
-    GPIOA->PUPDR |= GPIO_PUPDR_PUPD8_1; // Set du pull-up
+    GPIOA->PUPDR &= ~GPIO_PUPDR_PUPD8; // No pull-up / no pull-down
+    //GPIOA->PUPDR |= GPIO_PUPDR_PUPD8_1; // Set du pull-up
 
     // Configure SPI
 
@@ -124,19 +127,16 @@ uint8_t TransferSpiDataPolling(uint8_t data)
 
 void TransferSpiDataDMA(uint8_t* rx_data, uint8_t* tx_data, uint8_t reg)
 {
-    uint16_t dummyData = 0;
 
     // Set register address to transmit data
     tx_data[0] = reg |= 0x80; // Set bit 7 always to true
 
-    dummyData = SPI1->DR;
 
     SPI1->CR1 &= ~SPI_CR1_SPE; // Disable SPI interface
     // Configure DMA for SPI1
     SPI1->CR2 |= SPI_CR2_TXDMAEN; // Activate DMA for transmit
     SPI1->CR2 |= SPI_CR2_RXDMAEN; // Activate DMA for receive
     SPI1->CR1 |= SPI_CR1_SPE; // Enable SPI interface
-
 
     // Prepare DMA rx channel 2
     DMA1_Channel2->CCR &= ~DMA_CCR_EN; // Disable channel 2

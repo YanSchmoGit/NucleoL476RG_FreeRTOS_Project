@@ -32,10 +32,9 @@ void createTaskShowSensorData(void)
 
 void startShowSensorData(void* argument)
 {
-    //InitializeLcdScreen();
-
 
     static BMP280Values data_queue;
+
 
     /* Infinite loop */
     for (;;)
@@ -48,21 +47,23 @@ void startShowSensorData(void* argument)
 
             if (lcdMutexStatus == osOK)
             {
-               SetLcdCursorPosition(0, 0);
-                SendLcdString("Temp: ");
-                SendLcdInteger(data_queue.valueTemp);
-                SetLcdCursorPosition(0, 1);
-                SendLcdString("Press: ");
-                SendLcdInteger(data_queue.valuePress);
+
+                    SetLcdCursorPosition(0, 0);
+                    SendLcdString("Temp: ");
+                    SendLcdInteger(data_queue.valueTemp);
+                    SetLcdCursorPosition(0, 1);
+                    SendLcdString("Press: ");
+                    SendLcdInteger(data_queue.valuePress);
 
                 osMutexRelease(lcdMutexHandle);
             }
         }
         else
         {
-            osThreadFlagsSet(showErrorDataHandle, 0x01);
+            osThreadFlagsSet(showErrorDataHandle, ERROR_HANDLE_NO_DATA_IN_QUEUE);
 
         }
-        osDelay(100);
+
+        osDelay(10);
     }
 }

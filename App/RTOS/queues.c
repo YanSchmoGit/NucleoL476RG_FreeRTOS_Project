@@ -25,7 +25,7 @@ void createQueues(void)
 {
     /* Create the queue(s) */
     /* creation of sensorData */
-    sensorDataHandle = osMessageQueueNew(16, sizeof(BMP280Values), &sensorData_attributes);
+    sensorDataHandle = osMessageQueueNew(3, sizeof(BMP280Values), &sensorData_attributes);
     sensorErrorHandle = osMessageQueueNew(16, sizeof(uint8_t), &sensorError_attributes);
 }
 
