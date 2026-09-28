@@ -34,21 +34,34 @@ void startShowErrorData(void* argument)
     /* Infinite loop */
     for (;;)
     {
-        flags = osThreadFlagsWait(0x01, osFlagsWaitAny, osWaitForever);
+        flags = osThreadFlagsWait(ERROR_HANDLE_NO_DATA_IN_QUEUE | ERROR_HANDLE_VALUES_OUT_OF_BOUNDS, osFlagsWaitAny,
+                                  osWaitForever);
 
         //Acquire lcd mutex
         osStatus_t lcdMutexStatus = osMutexAcquire(lcdMutexHandle, osWaitForever);
 
         if (lcdMutexStatus == osOK)
         {
+
             SetLcdCursorPosition(0, 0);
-            SendLcdString("Test - Error");
+            SendLcdString("Error:           ");
+
+            if (flags == ERROR_HANDLE_NO_DATA_IN_QUEUE)
+            {
+                SetLcdCursorPosition(0, 1);
+                SendLcdString("No data in queue       ");
+            }
+            else if (flags == ERROR_HANDLE_VALUES_OUT_OF_BOUNDS)
+            {
+                SetLcdCursorPosition(0, 1);
+                SendLcdString("Value bounds     ");
+            }
+
 
             osMutexRelease(lcdMutexHandle);
         }
 
 
-
-        osDelay(100);
+        osDelay(10);
     }
 }

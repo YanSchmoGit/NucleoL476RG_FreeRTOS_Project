@@ -6,6 +6,9 @@
 #define NUCLEO_RTOS_PROJECT_SHOWERRORDATA_TASK_H
 #include "cmsis_os2.h"
 
+#define ERROR_HANDLE_NO_DATA_IN_QUEUE       (0x01)
+#define ERROR_HANDLE_VALUES_OUT_OF_BOUNDS   (0x02)
+
 extern osThreadId_t showErrorDataHandle;
 
 // Create task function
