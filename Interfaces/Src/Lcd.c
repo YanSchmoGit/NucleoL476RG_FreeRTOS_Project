@@ -3,6 +3,8 @@
 //
 
 #include "../Inc/Lcd.h"
+#include "../Inc/Utilities.h"
+
 #include "stm32l476xx.h"
 #include <stdbool.h>
 
@@ -54,8 +56,6 @@ void ConfigLcdScreen()
     // Set PUDPR
     GPIOC->PUPDR &= ~(GPIO_PUPDR_PUPD0_Msk | GPIO_PUPDR_PUPD1_Msk | GPIO_PUPDR_PUPD2_Msk | GPIO_PUPDR_PUPD3_Msk |
         GPIO_PUPDR_PUPD10_Msk | GPIO_PUPDR_PUPD11_Msk | GPIO_PUPDR_PUPD12_Msk); // No pull-up / no pull-down
-
-    EnableLcdTimer();
 }
 
 void SetLcdPin(GPIO_TypeDef* GPIOx, uint8_t Pin, bool Value)
@@ -78,41 +78,7 @@ void ResetLcdPins()
     SetLcdPin(LCD_DB7_PORT, LCD_DB7_PIN, false);
 }
 
-void EnableLcdTimer()
-{
-    RCC->APB1ENR1 |= RCC_APB1ENR1_TIM7EN;
 
-    TIM7->CR1 &= ~TIM_CR1_CEN;
-    TIM7->PSC = (80 - 1);
-    TIM7->ARR = (0xFFFF); // Max. value
-
-    TIM7->EGR |= TIM_EGR_UG;
-}
-
-void WaitTimeLcd_us(uint16_t time_us)
-{
-    // time --> us
-
-    // Start timer
-    TIM7->CNT = 0;
-    TIM7->CR1 |= TIM_CR1_CEN;
-
-    while (TIM7->CNT < time_us)
-    {
-    };
-
-    TIM7->CR1 &= ~TIM_CR1_CEN;
-};
-
-void WaitTimeLcd_ms(uint16_t time_ms)
-{
-    while (time_ms--)
-    {
-        WaitTimeLcd_us(1000);
-    };
-
-
-}
 
 void SendLcdInstructionByte(uint8_t instruction)
 {
@@ -121,7 +87,7 @@ void SendLcdInstructionByte(uint8_t instruction)
     SetLcdPin(LCD_DB6_PORT, LCD_DB6_PIN, 0b0100 & (instruction >> 4));
     SetLcdPin(LCD_DB7_PORT, LCD_DB7_PIN, 0b1000 & (instruction >> 4));
     SetLcdPin(LCD_E_PORT, LCD_E_PIN, true);
-    WaitTimeLcd_ms(LCD_WAIT_TIME);
+    WaitTime_ms(LCD_WAIT_TIME);
     SetLcdPin(LCD_E_PORT, LCD_E_PIN, false);
     ResetLcdPins();
     SetLcdPin(LCD_DB4_PORT, LCD_DB4_PIN, 0b00010000 & (instruction << 4));
@@ -129,10 +95,10 @@ void SendLcdInstructionByte(uint8_t instruction)
     SetLcdPin(LCD_DB6_PORT, LCD_DB6_PIN, 0b01000000 & (instruction << 4));
     SetLcdPin(LCD_DB7_PORT, LCD_DB7_PIN, 0b10000000 & (instruction << 4));
     SetLcdPin(LCD_E_PORT, LCD_E_PIN, true);
-    WaitTimeLcd_ms(LCD_WAIT_TIME);
+    WaitTime_ms(LCD_WAIT_TIME);
     SetLcdPin(LCD_E_PORT, LCD_E_PIN, false);
     ResetLcdPins();
-    WaitTimeLcd_ms(LCD_WAIT_TIME);
+    WaitTime_ms(LCD_WAIT_TIME);
 };
 
 void SendLcdInstructionNibble(uint8_t instruction)
@@ -142,7 +108,7 @@ void SendLcdInstructionNibble(uint8_t instruction)
     SetLcdPin(LCD_DB6_PORT, LCD_DB6_PIN, 0b0100 & (instruction >> 4));
     SetLcdPin(LCD_DB7_PORT, LCD_DB7_PIN, 0b1000 & (instruction >> 4));
     SetLcdPin(LCD_E_PORT, LCD_E_PIN, true);
-    WaitTimeLcd_ms(5);
+    WaitTime_ms(5);
     SetLcdPin(LCD_E_PORT, LCD_E_PIN, false);
     ResetLcdPins();
 
@@ -159,6 +125,11 @@ void InitializeLcdScreen()
     SendLcdInstructionByte(LCD_DISPLAY_ON_CURSOR_OFF); // Display on, cursor off
     SendLcdInstructionByte(LCD_DISPLAY_CLEAR); // Display clear
     SendLcdInstructionByte(LCD_CURSOR_AUTO); // Cursor auto
+}
+
+void ClearLcdScreen()
+{
+    SendLcdInstructionByte(LCD_DISPLAY_CLEAR); // Display clear
 }
 
 void SendLcdChar(char data)

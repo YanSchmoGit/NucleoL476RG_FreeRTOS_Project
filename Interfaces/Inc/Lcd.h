@@ -10,14 +10,14 @@
 
 void ConfigLcdScreen();
 
-void EnableLcdTimer();
-void WaitTimeLcd_ms(uint16_t time_ms);
-void WaitTimeLcd_us(uint16_t time_us);
+
 
 void SendLcdInstructionByte(uint8_t instruction);
 void SendLcdInstructionNibble(uint8_t instruction);
 
 void InitializeLcdScreen();
+
+void ClearLcdScreen();
 
 void SendLcdChar(char data);
 void SendLcdString(char *data);
