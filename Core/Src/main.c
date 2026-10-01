@@ -24,10 +24,7 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "../../App/app.h"
-#include "../../Interfaces/Inc/Spi.h"
-#include "../../Interfaces/Inc/Lcd.h"
-#include "../../Interfaces/Inc/BMP280.h"
-#include "../../Interfaces/Inc/Utilities.h"
+
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -98,19 +95,6 @@ int main(void)
 
 
     /* USER CODE BEGIN 2 */
-    // Enable utilies
-    EnableLcdTimer();
-
-    WaitTime_ms(10);
-
-    // Configure SPI interface
-    ConfigSpiInterface();
-
-    // Configure BMP280 Sensor
-    InitBMP280();
-    // Configure LCD screen
-    ConfigLcdScreen();
-    InitializeLcdScreen();
 
     /* USER CODE END 2 */
 

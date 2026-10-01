@@ -22,28 +22,33 @@ const osThreadAttr_t readSensorData_attributes = {
 
 void startReadSensorData(void* argument);
 
-void createTaskReadSensorData(void)
+void createTaskReadSensorData(BMP280Handle *sensor)
 {
     /* creation of readSensorData */
-    readSensorDataHandle = osThreadNew(startReadSensorData, NULL, &readSensorData_attributes);
+    readSensorDataHandle = osThreadNew(startReadSensorData, sensor, &readSensorData_attributes);
 }
 
 
 // Task loop
 void startReadSensorData(void* argument)
 {
+
+    BMP280Handle* sensor = (BMP280Handle*) argument;
+
     static volatile uint8_t tx_data[7];
     static volatile uint8_t rx_data[7];
 
-    static BMP280Values BMP280ValueData;
+
     /* Infinite loop */
     for (;;)
     {
         TransferSpiDataDMA(rx_data, tx_data, BMP280_REGISTER_PRESS_MSB);
-        ProcessSensorData(&BMP280ValueData, rx_data);
+        ProcessSensorData(sensor, rx_data);
 
+        osMessageQueuePut(sensorDataHandle, &sensor->SensorValues, 0, osWaitForever);
+        /*
         // check sensor data
-        if (CheckSensorData(&BMP280ValueData, 4000, 110000, 0, 0) == 1)
+        if (CheckSensorData(&sensor->SensorValues, 4000, 110000, 0, 0) == 1)
         {
             // Bad values
             osThreadFlagsSet(showErrorDataHandle, ERROR_HANDLE_VALUES_OUT_OF_BOUNDS);
@@ -51,9 +56,9 @@ void startReadSensorData(void* argument)
         else
         {
             // Good values
-            osMessageQueuePut(sensorDataHandle, &BMP280ValueData, 0, osWaitForever);
+            osMessageQueuePut(sensorDataHandle, &sensor->SensorValues, 0, osWaitForever);
         }
-
+*/
 
         osDelay(10);
     }

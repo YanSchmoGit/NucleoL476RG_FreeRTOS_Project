@@ -5,9 +5,15 @@
 #ifndef NUCLEO_RTOS_PROJECT_APP_H
 #define NUCLEO_RTOS_PROJECT_APP_H
 #include "queues.h"
-#include "tasks.h"
 #include "mutex.h"
-
+#include "../../Interfaces/Inc/SpiDevice.h"
+#include "readSensorData_task.h"
+#include "showSensorData_task.h"
+#include "showErrorData_task.h"
+#include "../../Interfaces/Inc/BMP280.h"
+#include "../../Interfaces/Inc/Spi.h"
+#include "../../Interfaces/Inc/Lcd.h"
+#include "../../Interfaces/Inc/Utilities.h"
 
 
 // App init function

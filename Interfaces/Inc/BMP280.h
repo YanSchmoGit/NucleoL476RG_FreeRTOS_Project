@@ -5,6 +5,7 @@
 #ifndef NUCLEO_RTOS_PROJECT_BMP280_H
 #define NUCLEO_RTOS_PROJECT_BMP280_H
 #include <stdint.h>
+#include "SpiDevice.h"
 
 // ##### Register definitions #####
 
@@ -58,56 +59,24 @@
 
 #define BMP280_ID							(0x58)
 
-// Calibation data
-
-typedef struct {
-	uint16_t 	dig_T1;
-	int16_t 	dig_T2;
-	int16_t 	dig_T3;
-	uint16_t 	dig_P1;
-	int16_t 	dig_P2;
-	int16_t 	dig_P3;
-	int16_t 	dig_P4;
-	int16_t 	dig_P5;
-	int16_t 	dig_P6;
-	int16_t 	dig_P7;
-	int16_t 	dig_P8;
-	int16_t 	dig_P9;
-} BMP280CalibrationData;
-
-extern BMP280CalibrationData BMP280CalibData;
-
-// BMP280 Datatypes
-
-typedef int32_t BMP280_S32_t;
-typedef uint32_t BMP280_U32_t;
-typedef int64_t BMP280_S64_t;
-
-typedef struct
-{
-	int32_t valueTemp;
-	uint32_t valuePress;
-} BMP280Values;
-
-
 
 // ##### BMP280 Functions #####
 
 
 // Init BMP280
-void InitBMP280();
+void InitBMP280(BMP280Handle* sensor_handle);
 
 // Get calibration data
-void GetSensorCalibrationData();
+void GetSensorCalibrationData(BMP280Handle* sensor_handle);
 
 // Compensation functions
 
-BMP280_S32_t bmp280_compensate_T_int32(BMP280_S32_t adc_T);
-BMP280_U32_t bmp280_compensate_P_int64(BMP280_S32_t adc_P);
+BMP280_S32_t bmp280_compensate_T_int32(BMP280CalibrationData *calibration_data, BMP280_S32_t *t_fine, BMP280_S32_t adc_T);
+BMP280_U32_t bmp280_compensate_P_int64(BMP280CalibrationData *calibration_data, BMP280_S32_t *t_fine, BMP280_S32_t adc_P);
 
 
 //  Process sensor data
-void ProcessSensorData(BMP280Values *values, uint8_t *raw_data);
+void ProcessSensorData(BMP280Handle* sensor_handle, uint8_t* raw_data);
 
 uint8_t CheckSensorData(BMP280Values *values, uint32_t upperLimitTemp, uint32_t upperLimitPress, uint32_t lowerLimitTemp, uint32_t lowerLimitPress);
 

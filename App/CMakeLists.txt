@@ -5,7 +5,6 @@ target_sources(${CMAKE_PROJECT_NAME}
         Tasks/readSensorData_task.c
         Tasks/showSensorData_task.c
         Tasks/showErrorData_task.c
-        Tasks/tasks.c
         RTOS/queues.c
         RTOS/mutex.c
 )

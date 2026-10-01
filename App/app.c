@@ -4,10 +4,25 @@
 
 #include "app.h"
 
-
+static BMP280Handle sensor_handle;
 
 void appInit(void)
 {
+
+    // Enable utilies
+    EnableLcdTimer();
+    WaitTime_ms(10);
+
+    // Configure SPI interface
+    ConfigSpiInterface();
+
+    // Configure BMP280 Sensor
+    InitBMP280(&sensor_handle);
+
+    // Configure LCD screen
+    ConfigLcdScreen();
+    InitializeLcdScreen();
+
 
     // Create queues
     createQueues();
@@ -16,5 +31,7 @@ void appInit(void)
     createMutexes();
 
     // Create tasks
-    createTasks();
+    createTaskReadSensorData(&sensor_handle);
+    createTaskShowSensorData();
+    createTaskShowErrorData();
 }
