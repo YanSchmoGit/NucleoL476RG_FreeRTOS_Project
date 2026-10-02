@@ -4,10 +4,12 @@
 
 #include "app.h"
 
-static BMP280Handle sensor_handle;
+static BMP280Handle sensor_handle_BMP280_1;
 
 void appInit(void)
 {
+
+
 
     // Enable utilies
     EnableLcdTimer();
@@ -17,7 +19,7 @@ void appInit(void)
     ConfigSpiInterface();
 
     // Configure BMP280 Sensor
-    InitBMP280(&sensor_handle);
+    InitBMP280(&sensor_handle_BMP280_1);
 
     // Configure LCD screen
     ConfigLcdScreen();
@@ -31,7 +33,7 @@ void appInit(void)
     createMutexes();
 
     // Create tasks
-    createTaskReadSensorData(&sensor_handle);
+    createTaskReadSensorData(&sensor_handle_BMP280_1);
     createTaskShowSensorData();
     createTaskShowErrorData();
 }

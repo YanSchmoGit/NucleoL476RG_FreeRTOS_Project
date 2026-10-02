@@ -22,7 +22,7 @@ const osThreadAttr_t readSensorData_attributes = {
 
 void startReadSensorData(void* argument);
 
-void createTaskReadSensorData(BMP280Handle *sensor)
+void createTaskReadSensorData(BMP280Handle* sensor)
 {
     /* creation of readSensorData */
     readSensorDataHandle = osThreadNew(startReadSensorData, sensor, &readSensorData_attributes);
@@ -32,11 +32,11 @@ void createTaskReadSensorData(BMP280Handle *sensor)
 // Task loop
 void startReadSensorData(void* argument)
 {
-
-    BMP280Handle* sensor = (BMP280Handle*) argument;
+    BMP280Handle* sensor = (BMP280Handle*)argument;
 
     static volatile uint8_t tx_data[7];
     static volatile uint8_t rx_data[7];
+
 
 
     /* Infinite loop */
@@ -45,8 +45,8 @@ void startReadSensorData(void* argument)
         TransferSpiDataDMA(rx_data, tx_data, BMP280_REGISTER_PRESS_MSB);
         ProcessSensorData(sensor, rx_data);
 
-        osMessageQueuePut(sensorDataHandle, &sensor->SensorValues, 0, osWaitForever);
-        /*
+
+
         // check sensor data
         if (CheckSensorData(&sensor->SensorValues, 4000, 110000, 0, 0) == 1)
         {
@@ -58,7 +58,7 @@ void startReadSensorData(void* argument)
             // Good values
             osMessageQueuePut(sensorDataHandle, &sensor->SensorValues, 0, osWaitForever);
         }
-*/
+
 
         osDelay(10);
     }
