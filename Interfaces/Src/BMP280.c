@@ -79,7 +79,7 @@ BMP280_S32_t bmp280_compensate_T_int32(BMP280CalibrationData *calibration_data, 
 BMP280_U32_t bmp280_compensate_P_int64(BMP280CalibrationData* calibration_data, BMP280_S32_t *t_fine, BMP280_S32_t adc_P)
 {
     BMP280_S64_t var1, var2, p;
-    var1 = ((BMP280_S64_t)t_fine) - 128000;
+    var1 = ((BMP280_S64_t)*t_fine) - 128000;
     var2 = var1 * var1 * (BMP280_S64_t)calibration_data->dig_P6;
     var2 = var2 + ((var1 * (BMP280_S64_t)calibration_data->dig_P5) << 17);
     var2 = var2 + (((BMP280_S64_t)calibration_data->dig_P4) << 35);
