@@ -63,52 +63,5 @@ void startReadSensorData(void* argument)
     }
 }
 
-void DMA1_Channel2_IRQHandler(void)
-{
-    // Check if transfer complete is set for DMA 2 channel
-    if (DMA1->ISR & DMA_ISR_TCIF2)
-    {
-        DMA1->IFCR = DMA_IFCR_CTCIF2; // delete interrupt flag
 
-        if (readSensorDataHandle != NULL)
-        {
-            osThreadFlagsSet(readSensorDataHandle, 0x01);
-        }
-    }
-
-    // Check if error ist set for DMA 2 channel
-    if (DMA1->ISR & DMA_ISR_TEIF2)
-    {
-        DMA1->IFCR = DMA_IFCR_CTEIF2;
-
-        osThreadFlagsSet(showErrorDataHandle, ERROR_HANDLE_DMA1_TRANSFER_ERROR);
-    }
-}
-
-
-void SPI1_IRQHandler(void)
-{
-    if (SPI1->SR & SPI_SR_CRCERR) // CRC error flag
-    {
-        SPI1->SR &= ~SPI_SR_CRCERR;
-        osThreadFlagsSet(showErrorDataHandle, ERROR_HANDLE_SPI1_CRC_ERROR);
-    }
-
-    if (SPI1->SR & SPI_SR_OVR) // Overrun flag
-    {
-        volatile uint32_t tmp;
-        tmp = SPI1->DR;
-        tmp = SPI1->SR;
-        (void)tmp;
-        osThreadFlagsSet(showErrorDataHandle, ERROR_HANDLE_SPI1_OVERRUN_ERROR);
-    }
-
-    if (SPI1->SR & SPI_SR_MODF) // Mode fault
-    {
-        volatile uint32_t tmp = SPI1->SR;
-        (void)tmp;
-        SPI1->CR1 |= SPI_CR1_SPE;
-        osThreadFlagsSet(showErrorDataHandle, ERROR_HANDLE_SPI1_MODE_FAULT_ERROR);
-    }
-}
 

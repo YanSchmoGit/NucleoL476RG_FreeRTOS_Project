@@ -7,8 +7,14 @@
 
 
 #include "cmsis_os2.h"
+#include "showErrorData_task.h"
+#include "readSensorData_task.h"
 #include "stm32l476xx.h"
+#include "../Inc/SpiDevice.h"
 
+
+
+SPIDevice_t* active_SPIDevice = NULL;
 
 // SPI interface
 
@@ -205,7 +211,58 @@ void ReadSpiDataDMA(void* ctx, uint8_t* data_rx, uint8_t reg, uint8_t length)
 
     // Set register address to transmit data
     data_tx[0] = reg |= 0x80; // Set bit 7 always to true
-
+    active_SPIDevice->ctx = ctx;
     TransferSpiDataDMA(data_rx, data_tx, length);
 };
 
+void DMA1_Channel2_IRQHandler(void)
+{
+    // Check if transfer complete is set for DMA 2 channel
+    if (DMA1->ISR & DMA_ISR_TCIF2)
+    {
+        DMA1->IFCR = DMA_IFCR_CTCIF2; // delete interrupt flag
+
+        osThreadFlagsSet(readSensorDataHandle, 0x01);
+
+
+        /*if (active_SPIDevice != NULL)
+        {
+            osThreadFlagsSet(active_SPIDevice->ctx , 0x01);
+        }*/
+    }
+
+    // Check if error ist set for DMA 2 channel
+    if (DMA1->ISR & DMA_ISR_TEIF2)
+    {
+        DMA1->IFCR = DMA_IFCR_CTEIF2;
+
+        osThreadFlagsSet(showErrorDataHandle, ERROR_HANDLE_DMA1_TRANSFER_ERROR);
+    }
+}
+
+
+void SPI1_IRQHandler(void)
+{
+    if (SPI1->SR & SPI_SR_CRCERR) // CRC error flag
+    {
+        SPI1->SR &= ~SPI_SR_CRCERR;
+        osThreadFlagsSet(showErrorDataHandle, ERROR_HANDLE_SPI1_CRC_ERROR);
+    }
+
+    if (SPI1->SR & SPI_SR_OVR) // Overrun flag
+    {
+        volatile uint32_t tmp;
+        tmp = SPI1->DR;
+        tmp = SPI1->SR;
+        (void)tmp;
+        osThreadFlagsSet(showErrorDataHandle, ERROR_HANDLE_SPI1_OVERRUN_ERROR);
+    }
+
+    if (SPI1->SR & SPI_SR_MODF) // Mode fault
+    {
+        volatile uint32_t tmp = SPI1->SR;
+        (void)tmp;
+        SPI1->CR1 |= SPI_CR1_SPE;
+        osThreadFlagsSet(showErrorDataHandle, ERROR_HANDLE_SPI1_MODE_FAULT_ERROR);
+    }
+}
