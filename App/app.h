@@ -6,7 +6,6 @@
 #define NUCLEO_RTOS_PROJECT_APP_H
 #include "queues.h"
 #include "mutex.h"
-#include "../../Interfaces/Inc/SpiDevice.h"
 #include "readSensorData_task.h"
 #include "showSensorData_task.h"
 #include "showErrorData_task.h"

@@ -89,6 +89,7 @@ typedef struct
 {
     BMP280CalibrationData CalibrationData;
     BMP280_S32_t t_fine;
+    SPIDevice_t Device;
     BMP280Values SensorValues;
 
 }BMP280Handle;

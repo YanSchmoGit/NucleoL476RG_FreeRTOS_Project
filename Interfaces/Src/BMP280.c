@@ -4,6 +4,8 @@
 
 #include "../Inc/BMP280.h"
 
+#include <stddef.h>
+
 #include "../Inc/Spi.h"
 #include "../Inc/Utilities.h"
 
@@ -19,14 +21,14 @@ void InitBMP280(BMP280Handle* sensor_handle)
     // Attempts for initialization of sensor
     for (uint8_t i = 0; 1 < 5; i++)
     {
-        WriteSpiData(BMP280_REGISTER_RESET, 0xB6);
+        WriteSpiDataPolling(BMP280_REGISTER_RESET, 0xB6);
         WaitTime_ms(5);
-        WriteSpiData(BMP280_REGISTER_CTRL_MEAS, BMP280_INIT_DATA);
+        WriteSpiDataPolling(BMP280_REGISTER_CTRL_MEAS, BMP280_INIT_DATA);
         WaitTime_ms(5);
 
         // Check for correct init values
-        ReadSpiData(BMP280_REGISTER_ID, 1, &bmp_id);
-        ReadSpiData(BMP280_REGISTER_CTRL_MEAS, 1, &bmp_ctrl);
+        ReadSpiDataPolling(BMP280_REGISTER_ID, 1, &bmp_id);
+        ReadSpiDataPolling(BMP280_REGISTER_CTRL_MEAS, 1, &bmp_ctrl);
 
         if ((bmp_id == BMP280_ID) & (bmp_ctrl == BMP280_INIT_DATA))
         {
@@ -40,10 +42,11 @@ void InitBMP280(BMP280Handle* sensor_handle)
 
 void GetSensorCalibrationData(BMP280Handle* sensor_handle)
 {
-    static uint8_t tempData[24];
 
     // Get data from sensor
-    ReadSpiData(BMP280_REGISTER_CALIB_00, 24, tempData);
+    static uint8_t tempData[24];
+
+    ReadSpiDataPolling(BMP280_REGISTER_CALIB_00, 24, tempData);
 
     sensor_handle->CalibrationData.dig_T1 = (int16_t)(((uint16_t)tempData[1] << 8) | tempData[0]);
     sensor_handle->CalibrationData.dig_T2 = (((uint16_t)tempData[3] << 8) | tempData[2]);
@@ -58,9 +61,8 @@ void GetSensorCalibrationData(BMP280Handle* sensor_handle)
     sensor_handle->CalibrationData.dig_P7 = (((uint16_t)tempData[19] << 8) | tempData[18]);
     sensor_handle->CalibrationData.dig_P8 = (((uint16_t)tempData[21] << 8) | tempData[20]);
     sensor_handle->CalibrationData.dig_P9 = (((uint16_t)tempData[23] << 8) | tempData[22]);
+
 };
-
-
 
 BMP280_S32_t bmp280_compensate_T_int32(BMP280CalibrationData calibration_data, BMP280_S32_t* t_fine, BMP280_S32_t adc_T)
 {

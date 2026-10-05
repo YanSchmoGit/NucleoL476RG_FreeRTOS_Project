@@ -34,15 +34,14 @@ void startReadSensorData(void* argument)
 {
     BMP280Handle* sensor = (BMP280Handle*)argument;
 
-    static volatile uint8_t tx_data[7];
     static volatile uint8_t rx_data[7];
-
 
 
     /* Infinite loop */
     for (;;)
     {
-        TransferSpiDataDMA(rx_data, tx_data, BMP280_REGISTER_PRESS_MSB);
+
+        sensor->Device.readData(NULL, rx_data,BMP280_REGISTER_PRESS_MSB, 7);
         ProcessSensorData(sensor, rx_data);
 
 
@@ -112,3 +111,4 @@ void SPI1_IRQHandler(void)
         osThreadFlagsSet(showErrorDataHandle, ERROR_HANDLE_SPI1_MODE_FAULT_ERROR);
     }
 }
+

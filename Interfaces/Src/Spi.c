@@ -12,7 +12,7 @@
 
 // SPI interface
 
-void ConfigSpiInterface()
+void ConfigSpiInterfaceHardware()
 {
     // Enable clock
     RCC->AHB1ENR |= RCC_AHB1ENR_DMA1EN;
@@ -101,6 +101,15 @@ void ConfigSpiInterface()
     NVIC_EnableIRQ(SPI1_IRQn);
 };
 
+void ConfigSpiInterfaceSoftware(SPIDevice_t* SpiDevice)
+{
+    // Assign functions to handle interface
+
+    SpiDevice->readData = ReadSpiDataDMA;
+    SpiDevice->writeData = WriteSpiDataDMA;
+
+};
+
 // Macros for CS
 
 #define DEVICE_CS_ON() (GPIOA->BSRR |= GPIO_BSRR_BR8)
@@ -125,43 +134,7 @@ uint8_t TransferSpiDataPolling(uint8_t data)
     return (*(__IO uint8_t*)&SPI1->DR); // Force 8 bit read from register
 }
 
-void TransferSpiDataDMA(uint8_t* rx_data, uint8_t* tx_data, uint8_t reg)
-{
-
-    // Set register address to transmit data
-    tx_data[0] = reg |= 0x80; // Set bit 7 always to true
-
-
-    SPI1->CR1 &= ~SPI_CR1_SPE; // Disable SPI interface
-    // Configure DMA for SPI1
-    SPI1->CR2 |= SPI_CR2_TXDMAEN; // Activate DMA for transmit
-    SPI1->CR2 |= SPI_CR2_RXDMAEN; // Activate DMA for receive
-    SPI1->CR1 |= SPI_CR1_SPE; // Enable SPI interface
-
-    // Prepare DMA rx channel 2
-    DMA1_Channel2->CCR &= ~DMA_CCR_EN; // Disable channel 2
-    DMA1_Channel2->CMAR = (uint32_t)rx_data; // Set memory address
-    DMA1_Channel2->CNDTR = 7; // Set number of bytes to transfer
-    DMA1_Channel2->CCR |= DMA_CCR_EN; // Enable channel 2
-
-    // Prepare DMA rx channel 3
-    DMA1_Channel3->CCR &= ~DMA_CCR_EN; // Disable channel 3
-    DMA1_Channel3->CMAR = (uint32_t)tx_data; // Set memory address
-    DMA1_Channel3->CNDTR = 7; // Set number of bytes to transfer
-
-    DEVICE_CS_ON(); // Enable sensor
-
-    DMA1_Channel3->CCR |= DMA_CCR_EN; // Enable channel 3 -> start transmission
-
-
-    uint32_t flags = osThreadFlagsWait(0x01, osFlagsWaitAny, osWaitForever);
-
-    DEVICE_CS_OFF(); // Disable sensor
-
-    DMA1->IFCR = DMA_IFCR_CTCIF3;
-};
-
-void WriteSpiData(uint8_t reg, uint8_t data)
+void WriteSpiDataPolling(uint8_t reg, uint8_t data)
 {
     reg &= ~0x80; // Set bit 7 always false for write operation
     DEVICE_CS_ON();
@@ -170,7 +143,7 @@ void WriteSpiData(uint8_t reg, uint8_t data)
     DEVICE_CS_OFF();
 }
 
-void ReadSpiData(uint8_t reg, uint8_t count, uint8_t* data)
+void ReadSpiDataPolling(uint8_t reg, uint8_t count, uint8_t* data)
 {
     uint8_t dummy_data = 0;
     reg |= 0x80; // Set bit 7 always true for read operation
@@ -184,5 +157,55 @@ void ReadSpiData(uint8_t reg, uint8_t count, uint8_t* data)
     DEVICE_CS_OFF();
 }
 
+void TransferSpiDataDMA(uint8_t* rx_data, uint8_t* tx_data, uint8_t length)
+{
+    SPI1->CR1 &= ~SPI_CR1_SPE; // Disable SPI interface
+    // Configure DMA for SPI1
+    SPI1->CR2 |= SPI_CR2_TXDMAEN; // Activate DMA for transmit
+    SPI1->CR2 |= SPI_CR2_RXDMAEN; // Activate DMA for receive
+    SPI1->CR1 |= SPI_CR1_SPE; // Enable SPI interface
 
+    // Prepare DMA rx channel 2
+    DMA1_Channel2->CCR &= ~DMA_CCR_EN; // Disable channel 2
+    DMA1_Channel2->CMAR = (uint32_t)rx_data; // Set memory address
+    DMA1_Channel2->CNDTR = (uint32_t)length; // Set number of bytes to transfer
+    DMA1_Channel2->CCR |= DMA_CCR_EN; // Enable channel 2
+
+    // Prepare DMA tx channel 3
+    DMA1_Channel3->CCR &= ~DMA_CCR_EN; // Disable channel 3
+    DMA1_Channel3->CMAR = (uint32_t)tx_data; // Set memory address
+    DMA1_Channel3->CNDTR = (uint32_t)length; // Set number of bytes to transfer
+
+    DEVICE_CS_ON(); // Enable sensor
+
+    DMA1_Channel3->CCR |= DMA_CCR_EN; // Enable channel 3 -> start transmission
+
+
+    uint32_t flags = osThreadFlagsWait(0x01, osFlagsWaitAny, osWaitForever);
+
+    DEVICE_CS_OFF(); // Disable sensor
+
+    DMA1->IFCR = DMA_IFCR_CTCIF3;
+};
+
+
+
+void WriteSpiDataDMA(void* ctx, uint8_t* data_tx, uint8_t reg, uint8_t length)
+{
+    data_tx[0] = reg &= ~0x80; // Set bit 7 always false for write operation
+    uint8_t dummy_data = 0;
+
+    TransferSpiDataDMA(&dummy_data, data_tx, length);
+
+};
+
+void ReadSpiDataDMA(void* ctx, uint8_t* data_rx, uint8_t reg, uint8_t length)
+{
+    uint8_t data_tx[length];
+
+    // Set register address to transmit data
+    data_tx[0] = reg |= 0x80; // Set bit 7 always to true
+
+    TransferSpiDataDMA(data_rx, data_tx, length);
+};
 

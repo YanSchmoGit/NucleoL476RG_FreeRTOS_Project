@@ -16,7 +16,8 @@ void appInit(void)
     WaitTime_ms(10);
 
     // Configure SPI interface
-    ConfigSpiInterface();
+    ConfigSpiInterfaceHardware();
+    ConfigSpiInterfaceSoftware(&sensor_handle_BMP280_1.Device);
 
     // Configure BMP280 Sensor
     InitBMP280(&sensor_handle_BMP280_1);
