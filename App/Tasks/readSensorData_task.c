@@ -41,7 +41,7 @@ void startReadSensorData(void* argument)
     for (;;)
     {
 
-        sensor->Device.readData(NULL, rx_data,BMP280_REGISTER_PRESS_MSB, 7);
+        sensor->Device.readData(&readSensorDataHandle, rx_data,BMP280_REGISTER_PRESS_MSB, 7);
         ProcessSensorData(sensor, rx_data);
 
 

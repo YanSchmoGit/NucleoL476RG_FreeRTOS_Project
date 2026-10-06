@@ -1,20 +1,15 @@
 //
 // Created by yan on 8/28/26.
 //
-
 #include "../Inc/Spi.h"
-
 
 
 #include "cmsis_os2.h"
 #include "showErrorData_task.h"
-#include "readSensorData_task.h"
 #include "stm32l476xx.h"
 #include "../Inc/SpiDevice.h"
 
-
-
-SPIDevice_t* active_SPIDevice = NULL;
+void* active_SPIDevice = NULL;
 
 // SPI interface
 
@@ -57,10 +52,8 @@ void ConfigSpiInterfaceHardware()
 
     // Set PUPDR
     GPIOA->PUPDR &= ~GPIO_PUPDR_PUPD8; // No pull-up / no pull-down
-    //GPIOA->PUPDR |= GPIO_PUPDR_PUPD8_1; // Set du pull-up
 
     // Configure SPI
-
     SPI1->CR1 &= ~SPI_CR1_SPE; // Disable SPI interface
 
     SPI1->CR1 |= SPI_CR1_BR_1 | SPI_CR1_BR_0; // Set baudrate to clock/16
@@ -110,9 +103,9 @@ void ConfigSpiInterfaceHardware()
 void ConfigSpiInterfaceSoftware(SPIDevice_t* SpiDevice)
 {
     // Assign functions to handle interface
-
     SpiDevice->readData = ReadSpiDataDMA;
     SpiDevice->writeData = WriteSpiDataDMA;
+    SpiDevice->transferDone = TransferDoneDMA;
 
 };
 
@@ -186,14 +179,12 @@ void TransferSpiDataDMA(uint8_t* rx_data, uint8_t* tx_data, uint8_t length)
 
     DMA1_Channel3->CCR |= DMA_CCR_EN; // Enable channel 3 -> start transmission
 
-
     uint32_t flags = osThreadFlagsWait(0x01, osFlagsWaitAny, osWaitForever);
 
     DEVICE_CS_OFF(); // Disable sensor
-
+    active_SPIDevice = NULL;
     DMA1->IFCR = DMA_IFCR_CTCIF3;
 };
-
 
 
 void WriteSpiDataDMA(void* ctx, uint8_t* data_tx, uint8_t reg, uint8_t length)
@@ -202,7 +193,6 @@ void WriteSpiDataDMA(void* ctx, uint8_t* data_tx, uint8_t reg, uint8_t length)
     uint8_t dummy_data = 0;
 
     TransferSpiDataDMA(&dummy_data, data_tx, length);
-
 };
 
 void ReadSpiDataDMA(void* ctx, uint8_t* data_rx, uint8_t reg, uint8_t length)
@@ -211,9 +201,17 @@ void ReadSpiDataDMA(void* ctx, uint8_t* data_rx, uint8_t reg, uint8_t length)
 
     // Set register address to transmit data
     data_tx[0] = reg |= 0x80; // Set bit 7 always to true
-    active_SPIDevice->ctx = ctx;
+    active_SPIDevice = ctx;
     TransferSpiDataDMA(data_rx, data_tx, length);
 };
+
+void TransferDoneDMA(void* ctx)
+{
+    osThreadId_t* aciveSensorTaskHandle;
+    aciveSensorTaskHandle = (osThreadId_t*)ctx;
+    osThreadFlagsSet(*aciveSensorTaskHandle, 0x01);
+};
+
 
 void DMA1_Channel2_IRQHandler(void)
 {
@@ -222,13 +220,10 @@ void DMA1_Channel2_IRQHandler(void)
     {
         DMA1->IFCR = DMA_IFCR_CTCIF2; // delete interrupt flag
 
-        osThreadFlagsSet(readSensorDataHandle, 0x01);
-
-
-        /*if (active_SPIDevice != NULL)
+        if (active_SPIDevice != NULL)
         {
-            osThreadFlagsSet(active_SPIDevice->ctx , 0x01);
-        }*/
+            TransferDoneDMA(active_SPIDevice);
+        }
     }
 
     // Check if error ist set for DMA 2 channel
@@ -239,7 +234,6 @@ void DMA1_Channel2_IRQHandler(void)
         osThreadFlagsSet(showErrorDataHandle, ERROR_HANDLE_DMA1_TRANSFER_ERROR);
     }
 }
-
 
 void SPI1_IRQHandler(void)
 {

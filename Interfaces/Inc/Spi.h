@@ -24,5 +24,7 @@ void WriteSpiDataDMA(void* ctx, uint8_t* data_tx, uint8_t reg, uint8_t length);
 void ReadSpiDataDMA(void* ctx, uint8_t* data_rx, uint8_t reg, uint8_t length);
 
 
+void TransferDoneDMA(void* ctx);
+
 
 #endif //NUCLEO_RTOS_PROJECT_PERIPHERALS_H
