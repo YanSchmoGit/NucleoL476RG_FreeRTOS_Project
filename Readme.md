@@ -1,4 +1,4 @@
-# Dual-Microcontroller CAN Bus Communication System
+# Free RTOS Project - Read Data via SPI
 
 ## Description
 
